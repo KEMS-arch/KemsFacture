@@ -1,0 +1,38 @@
+
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build Android APK
+        run: chmod +x gradlew 2>/dev/null || true
+      - name: Compile
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew assembleDebug
+          else
+            echo "Le fichier gradlew est absent du projet."
+            exit 1
+          fi
+
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KEMSFacturation-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
